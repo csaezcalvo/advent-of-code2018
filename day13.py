@@ -1,0 +1,132 @@
+file_path="/home/carlos/advcode2018/input13"
+file = open(file_path,'r')
+
+test_data = ['/>-<\\  ','|   |  ','| /<+-\\','| | | v','\\>+</ |','  |   ^','  \\<->/']
+test_data2 = ['/->-\\        ','|   |  /----\\','| /-+--+-\\  |','| | |  | v  |',
+              '\\-+-/  \\-+--/','  \\------/   ']   
+ 
+
+data = []
+carts_pos = []
+i=0
+#for line in test_data2:
+for line in file:
+    row =[]
+    j=0
+    for x in line:
+        if x == '^':
+            row.append('|')
+            carts_pos.append([0,[i,j],0])
+        elif x == '>':
+            row.append('-')
+            carts_pos.append([1,[i,j],0])            
+        elif x == 'v':
+            row.append('|')
+            carts_pos.append([2,[i,j],0])
+        elif x == '<':    
+            row.append('-')
+            carts_pos.append([3,[i,j],0])
+        elif x != '\n':
+            row.append(x)
+        j += 1
+    i += 1
+    data.append([x for x in row if x != '\n'])
+
+
+
+def move(data,carts_pos):
+    carts_pos = carts_pos.sort(key=max(lambda x: x[1]))
+    print(carts_pos)
+    for cart in carts_pos:
+        if cart[0] == 0:
+            cart[1][0] -= 1
+        elif cart[0] == 1:
+            cart[1][1] += 1
+        elif cart[0] == 2:
+            cart[1][0] += 1
+        elif cart[0] == 3:
+            cart[1][1] -= 1
+            
+        if data[cart[1][0]][cart[1][1]] == '+':
+            cart[0] = (cart[0] + cart[2]-1)%4
+            cart[2] = (cart[2]+1)%3
+        elif data[cart[1][0]][cart[1][1]] == '/':
+            if cart[0] == 0:
+                cart[0] = 1
+            elif cart[0] == 1:
+                cart[0] = 0
+            elif cart[0] == 2:
+                cart[0] = 3
+            elif cart[0] == 3:
+                cart[0] = 2
+        elif data[cart[1][0]][cart[1][1]] == '\\':
+            if cart[0] == 0:
+                cart[0] = 3
+            elif cart[0] == 1:
+                cart[0] = 2
+            elif cart[0] == 2:
+                cart[0] = 1
+            elif cart[0] == 3:
+                cart[0] = 0
+    return carts_pos
+
+def check_collision(carts_pos):
+    pos = [cart[1] for cart in carts_pos]
+    repeated = []
+    for i in range(len(pos)):
+        for j in range(len(pos)):
+            if i != j and pos[i] == pos[j]:
+                repeated.append(carts_pos[j][1])
+    return repeated
+
+def iter(data,carts_pos):
+    tick = 0
+    while check_collision(carts_pos) == False:
+        print(tick)
+        carts_pos = move(data,carts_pos)
+        tick +=1
+    return check_collision(carts_pos)
+
+def last_survivor(data, carts_pos):
+    tick = 0
+    while len(carts_pos) > 1:
+        #if tick >-1:
+        #    show_data(data,carts_pos)
+        if tick%1 == 0:
+            print(tick, len(carts_pos))
+        carts_pos = move(data,carts_pos)
+        rep = check_collision(carts_pos) 
+        if rep:
+            carts_pos = [cart for cart in carts_pos if not(cart[1] in rep)]
+        tick +=1
+    return (tick, carts_pos)
+
+    
+def show_data(data, carts_pos):
+    d = { 0:'^',1:'>',2:'v',3:'<'}
+    new_data = []
+    for x in data:
+        y = x.copy()
+        new_data.append(y)
+    for cart in carts_pos:
+        new_data[cart[1][0]][cart[1][1]] = d[cart[0]]
+    for row in new_data:
+        print(''.join(row))
+    #print(data)
+    
+
+#print(test_data, carts_pos)
+#carts_pos = [[2, [3, 9], 0]]
+print(last_survivor(data,carts_pos))
+#print(data, carts_pos)
+#show_data(data, carts_pos)
+#print(data)
+#carts_pos = move(data, carts_pos)
+#print(data)
+#show_data(data, carts_pos)
+#print(data)
+#carts_pos=[]
+#show_data(data,carts_pos)
+
+
+
